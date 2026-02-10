@@ -43,7 +43,7 @@ export class ProyectosService {
     const sortField = params.sort ?? 'id';
     const sortOrder = params.order ?? 'desc';
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await Promise.all([
       this.prisma.proyecto.findMany({
         skip,
         take,
