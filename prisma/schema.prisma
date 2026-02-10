@@ -1,0 +1,115 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  usuario String
+  clave   String
+  nivel   Int
+
+  @@map("usuarios")
+}
+
+model Empleado {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName             String
+  lastName              String
+  birthDate             String?
+  address               String?
+  addressProof          String?
+  criminalRecord        String?
+  email                 String?
+  phone                 String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  alias                 String?
+  cbu                   String?
+  specialty             String?
+  coverageAreas         String[] @default([])
+  availability          String?
+  shirtSize             String?
+  shoeSize              String?
+  status                String   @default("activo")
+  salary                Float?   @default(0)
+  startDate             String
+  saldoActual           Float    @default(0)
+
+  @@map("personal")
+}
+
+model Proyecto {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  client      String?
+  address     String?
+  category    String?
+  status      String?
+  budget      Float    @default(0)
+  dueDate     String?
+  progress    Float?   @default(0)
+  description String?
+  team       String[] @default([])
+
+  @@map("proyectos")
+}
+
+model Cliente {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+  dni       String?
+  notes     String?
+  createdAt String   @default("")
+
+  @@map("clientes")
+}
+
+model Tiempo {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId  String
+  employeeId String
+  date       String
+  hours      Float
+  hourlyRate Float?
+  amount     Float    @default(0)
+  notes      String?
+
+  @@map("tiempos")
+}
+
+model PagoPersonal {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId String
+  projectId  String?
+  date       String
+  type       String   // "pago" | "adelanto"
+  amount     Float
+  notes      String?
+
+  @@map("pagosPersonal")
+}
+
+model GastoProyecto {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId  String
+  concept    String
+  category   String
+  amount     Float
+  date       String
+  supplier   String?
+  invoiceRef String?
+
+  @@map("gastosProyecto")
+}
