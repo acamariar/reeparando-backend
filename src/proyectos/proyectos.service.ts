@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
+import { Prisma } from '@prisma/client';
 
 type PrismaProyecto = Awaited<ReturnType<PrismaService['proyecto']['findFirst']>>;
 
@@ -44,17 +45,19 @@ export class ProyectosService {
     const search = params.search
     const sortField = params.sort ?? 'id';
     const sortOrder = params.order ?? 'desc';
-    const where = search
-      ? { name: { contains: search, mode: 'insensitive' } }
+    const where: Prisma.ProyectoWhereInput | undefined = params.search
+      ? { name: { contains: params.search, mode: 'insensitive' } }
       : undefined;
-    const [items, total] = await Promise.all([
+
+    const [items, total] = await this.prisma.$transaction([
       this.prisma.proyecto.findMany({
+        where,
         skip,
         take,
         orderBy: { [sortField]: sortOrder },
 
       }),
-      this.prisma.proyecto.count(),
+      this.prisma.proyecto.count({ where }),
     ]);
 
     return { items: items.map((p) => this.mapProyecto(p)), total };
