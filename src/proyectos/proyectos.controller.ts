@@ -36,8 +36,8 @@ export class ProyectosController {
     @Query('_limit') _limit: string,
     @Query('_sort') _sort: string,
     @Query('_order') _order: 'asc' | 'desc',
-    @Query('search') search?: string,
     @Res() res: Response,
+    @Query('search') search?: string,
   ) {
     const page = Number(_page) || 1;
     const limit = Number(_limit) || 6;
