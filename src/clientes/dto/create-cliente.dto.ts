@@ -55,4 +55,15 @@ export class CreateClienteDto implements Prisma.ClienteCreateInput {
     @IsOptional()
     @IsString()
     createdAt?: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    referenceMedium?: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    generatedSale?: string;
+
 }

@@ -72,7 +72,9 @@ model Cliente {
   dni       String?
   notes     String?
   createdAt String   @default("")
-
+  referenceMedium String?  @default("")
+  generatedSale   String?  @default("")
+  
   @@map("clientes")
 }
 
