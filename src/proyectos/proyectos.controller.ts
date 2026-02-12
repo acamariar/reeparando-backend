@@ -30,11 +30,13 @@ export class ProyectosController {
   @ApiQuery({ name: '_limit', required: false, type: Number })
   @ApiQuery({ name: '_sort', required: false, type: String })
   @ApiQuery({ name: '_order', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'search', required: false, type: String })
   async findAll(
     @Query('_page') _page: string,
     @Query('_limit') _limit: string,
     @Query('_sort') _sort: string,
     @Query('_order') _order: 'asc' | 'desc',
+    @Query('search') search?: string,
     @Res() res: Response,
   ) {
     const page = Number(_page) || 1;
@@ -47,6 +49,7 @@ export class ProyectosController {
       limit,
       sort,
       order,
+      search,
     });
 
     res.set('x-total-count', total.toString());

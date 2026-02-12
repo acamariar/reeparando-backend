@@ -36,24 +36,30 @@ export class ProyectosService {
     limit?: number;
     sort?: string;
     order?: 'asc' | 'desc';
+    search?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
     const take = Math.max(1, params.limit ?? 6);
     const skip = (page - 1) * take;
+    const search = params.search
     const sortField = params.sort ?? 'id';
     const sortOrder = params.order ?? 'desc';
-
+    const where = search
+      ? { name: { contains: search, mode: 'insensitive' } }
+      : undefined;
     const [items, total] = await Promise.all([
       this.prisma.proyecto.findMany({
         skip,
         take,
         orderBy: { [sortField]: sortOrder },
+
       }),
       this.prisma.proyecto.count(),
     ]);
 
     return { items: items.map((p) => this.mapProyecto(p)), total };
   }
+
 
   async findOne(id: string) {
     const p = await this.prisma.proyecto.findUnique({ where: { id } });
