@@ -60,4 +60,18 @@ export class PagosPersonalService {
   remove(id: string) {
     return this.prisma.pagoPersonal.delete({ where: { id } });
   }
+  async findAll({ where, page, limit, sort, order }) {
+    const skip = (page - 1) * limit;
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.pagoPersonal.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sort]: order },
+      }),
+      this.prisma.pagoPersonal.count({ where }),
+    ]);
+    return { items, total };
+  }
+
 }

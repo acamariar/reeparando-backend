@@ -27,7 +27,7 @@ export class PagosPersonalController {
   }
 
   @Get()
-  @ApiQuery({ name: 'employeeId', required: true, type: String })
+  @ApiQuery({ name: 'employeeId', required: false, type: String })
   @ApiQuery({ name: 'projectId', required: false, type: String })
   @ApiQuery({ name: '_page', required: false, type: Number })
   @ApiQuery({ name: '_limit', required: false, type: Number })
@@ -36,22 +36,22 @@ export class PagosPersonalController {
   async findAll(
     @Query('employeeId') employeeId: string,
     @Query('projectId') projectId: string,
-    @Query('_page') _page: string,
-    @Query('_limit') _limit: string,
-    @Query('_sort') _sort: string,
-    @Query('_order') _order: 'asc' | 'desc',
+    @Query('_page') _page = 1,
+    @Query('_limit') _limit = 10,
+    @Query('_sort') _sort = 'date',
+    @Query('_order') _order: 'asc' | 'desc' = 'desc',
     @Res() res: Response,
   ) {
-    if (!employeeId) throw new BadRequestException('employeeId is required');
-
     const page = Number(_page) || 1;
     const limit = Number(_limit) || 10;
-    const sort = _sort;
-    const order = _order;
+    const sort = _sort || 'date';
+    const order = _order || 'desc';
 
-    const { items, total } = await this.pagosService.findByEmployee({
-      employeeId,
-      projectId,
+    const { items, total } = await this.pagosService.findAll({
+      where: {
+        ...(employeeId ? { employeeId } : {}),
+        ...(projectId ? { projectId } : {}),
+      },
       page,
       limit,
       sort,
@@ -61,6 +61,7 @@ export class PagosPersonalController {
     res.set('x-total-count', total.toString());
     return res.json(items);
   }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePagoPersonalDto) {
