@@ -38,6 +38,8 @@ export class ProyectosController {
     @Query('_order') _order: 'asc' | 'desc',
     @Res() res: Response,
     @Query('search') search?: string,
+    @Query('startFrom') startFrom?: string,
+    @Query('startTo') startTo?: string,
   ) {
     const page = Number(_page) || 1;
     const limit = Number(_limit) || 6;
@@ -50,6 +52,8 @@ export class ProyectosController {
       sort,
       order,
       search,
+      startFrom,
+      startTo,
     });
 
     res.set('x-total-count', total.toString());

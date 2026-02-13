@@ -40,6 +40,8 @@ export class ProyectosService {
     sort?: string;
     order?: 'asc' | 'desc';
     search?: string;
+    startFrom?: string;
+    startTo?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
     const take = Math.max(1, params.limit ?? 6);
@@ -47,9 +49,19 @@ export class ProyectosService {
     const search = params.search
     const sortField = params.sort ?? 'id';
     const sortOrder = params.order ?? 'desc';
-    const where: Prisma.ProyectoWhereInput | undefined = params.search
-      ? { name: { contains: params.search, mode: 'insensitive' } }
-      : undefined;
+    const where: Prisma.ProyectoWhereInput | undefined = {
+      ...(params.search
+        ? { name: { contains: params.search, mode: 'insensitive' } }
+        : {}),
+      ...(params.startFrom || params.startTo
+        ? {
+          startDate: {
+            gte: params.startFrom ?? undefined,
+            lte: params.startTo ?? undefined,
+          },
+        }
+        : {}),
+    };
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.proyecto.findMany({
