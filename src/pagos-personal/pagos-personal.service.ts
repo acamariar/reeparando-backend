@@ -38,6 +38,7 @@ export class PagosPersonalService {
     const sortOrder = params.order ?? 'desc';
 
     const where: any = { employeeId };
+
     if (projectId) where.projectId = projectId;
 
     const [items, total] = await this.prisma.$transaction([
@@ -64,15 +65,32 @@ export class PagosPersonalService {
     from,
     to, }) {
     const skip = (page - 1) * limit;
+    let employeeIds: string[] | undefined;
+    if (search) {
+      const emps = await this.prisma.empleado.findMany({
+        where: {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      employeeIds = emps.map(e => e.id);
+    }
+
+
     const whereFilter: Prisma.PagoPersonalWhereInput = {
       ...where,
-      ...(search
-        ? { employeeName: { contains: search, mode: 'insensitive' } }
-        : {}),
+      ...(employeeIds && employeeIds.length
+        ? { employeeId: { in: employeeIds } }
+        : search
+          ? { employeeId: { in: [] } } // si no hubo match, no devuelve nada
+          : {}),
       ...(from || to
         ? {
           date: {
-            ...(from ? { gte: from } : {}), // si date es String en el schema
+            ...(from ? { gte: from } : {}), // date es string (YYYY-MM-DD)
             ...(to ? { lte: to } : {}),
           },
         }
