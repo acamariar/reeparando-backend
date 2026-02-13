@@ -111,7 +111,7 @@ model GastoProyecto {
   amount     Float
   date       String
   supplier   String?
-  invoiceRef String?
+  invoiceRef String? @unique
 
   @@map("gastosProyecto")
 }

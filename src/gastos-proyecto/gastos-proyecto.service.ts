@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateGastosProyectoDto } from './dto/update-gastos-proyecto.dto';
 import { CreateGastoProyectoDto } from './dto/create-gastos-proyecto.dto';
@@ -7,7 +7,16 @@ import { CreateGastoProyectoDto } from './dto/create-gastos-proyecto.dto';
 export class GastosProyectoService {
   constructor(private prisma: PrismaService) { }
 
-  create(dto: CreateGastoProyectoDto) {
+  async create(dto: CreateGastoProyectoDto) {
+    if (dto.invoiceRef) {
+      const exists = await this.prisma.gastoProyecto.findFirst({
+        where: {
+          invoiceRef: dto.invoiceRef,
+
+        },
+      });
+      if (exists) throw new BadRequestException('Ese número de factura ya existe');
+    }
     return this.prisma.gastoProyecto.create({ data: dto });
   }
 
@@ -44,7 +53,18 @@ export class GastosProyectoService {
     return this.prisma.gastoProyecto.findUnique({ where: { id } });
   }
 
-  update(id: string, dto: UpdateGastosProyectoDto) {
+  async update(id: string, dto: UpdateGastosProyectoDto) {
+    if (dto.invoiceRef) {
+      const exists = await this.prisma.gastoProyecto.findFirst({
+        where: {
+          invoiceRef: dto.invoiceRef,
+          // si es por proyecto:
+          // projectId: dto.projectId,
+          NOT: { id },
+        },
+      });
+      if (exists) throw new BadRequestException('Ese número de factura ya existe');
+    }
     return this.prisma.gastoProyecto.update({ where: { id }, data: dto });
   }
 
