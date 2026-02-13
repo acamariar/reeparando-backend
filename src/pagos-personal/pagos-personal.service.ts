@@ -81,16 +81,11 @@ export class PagosPersonalService {
 
 
     const whereFilter: Prisma.PagoPersonalWhereInput = {
-      ...where,
-      ...(employeeIds && employeeIds.length
-        ? { employeeId: { in: employeeIds } }
-        : search
-          ? { employeeId: { in: [] } } // si no hubo match, no devuelve nada
-          : {}),
+      ...(employeeIds?.length ? { employeeId: { in: employeeIds } } : {}),
       ...(from || to
         ? {
           date: {
-            ...(from ? { gte: from } : {}), // date es string (YYYY-MM-DD)
+            ...(from ? { gte: from } : {}), // si date es String (YYYY-MM-DD)
             ...(to ? { lte: to } : {}),
           },
         }
