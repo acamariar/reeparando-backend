@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjectStatus } from '@prisma/client';
 
 type PrismaProyecto = Awaited<ReturnType<PrismaService['proyecto']['findFirst']>>;
 
@@ -20,13 +20,15 @@ export class ProyectosService {
         name: dto.name,
         client: dto.client, // guardamos client en clientId
         address: dto.address,
-        status: dto.status ?? 'En Progreso',
         category: dto.category ?? 'impermeabilizacion',
         budget: dto.budget ?? 0,
         progress: dto.progress ?? 0,
         dueDate: dto.dueDate,
         description: dto.description,
         team: dto.team ?? [],
+        startDate: dto.startDate,                      // requerido
+        endDate: dto.endDate,
+        status: dto.status ?? ProjectStatus.EN_PROGRESO,
       },
     });
     return this.mapProyecto(created);
@@ -76,13 +78,15 @@ export class ProyectosService {
         name: dto.name,
         client: dto.client,
         address: dto.address,
-        status: dto.status,
         category: dto.category,
         budget: dto.budget,
         progress: dto.progress,
         dueDate: dto.dueDate,
         description: dto.description,
         team: dto.team ? { set: dto.team } : undefined,
+        startDate: dto.startDate,          // si en Update DTO es opcional, deja así
+        endDate: dto.endDate,
+        status: dto.status,
       },
     });
     return this.mapProyecto(updated);

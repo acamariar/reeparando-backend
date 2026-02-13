@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Prisma } from '@prisma/client';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Prisma, ProjectStatus } from '@prisma/client';
 
 export class CreateProyectoDto implements Prisma.ProyectoCreateInput {
     @ApiProperty()
@@ -16,11 +16,6 @@ export class CreateProyectoDto implements Prisma.ProyectoCreateInput {
     @IsOptional()
     @IsString()
     address?: string;
-
-    @ApiProperty({ required: false, default: 'En Progreso' })
-    @IsOptional()
-    @IsString()
-    status?: string;
 
     @ApiProperty({ required: false, default: 'impermeabilizacion' })
     @IsOptional()
@@ -52,4 +47,18 @@ export class CreateProyectoDto implements Prisma.ProyectoCreateInput {
     @IsArray()
     @IsString({ each: true })
     team?: string[];
+
+    @ApiProperty()
+    @IsString()
+    startDate: string;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    endDate?: string;
+
+    @ApiProperty({ required: false, enum: ProjectStatus, default: ProjectStatus.EN_PROGRESO })
+    @IsOptional()
+    @IsEnum(ProjectStatus)
+    status?: ProjectStatus;
 }

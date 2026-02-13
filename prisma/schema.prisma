@@ -1,3 +1,10 @@
+enum ProjectStatus {
+  EN_PROGRESO
+  FINALIZADA
+  ATRASADA
+  GARANTIA
+}
+
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
@@ -49,12 +56,14 @@ model Proyecto {
   client      String?
   address     String?
   category    String?
-  status      String?
   budget      Float    @default(0)
   dueDate     String?
   progress    Float?   @default(0)
   description String?
   team       String[] @default([])
+  startDate  String   @db.String  
+  endDate    String?  @db.String  
+  status     ProjectStatus @default(EN_PROGRESO)
 
   @@map("proyectos")
 }
