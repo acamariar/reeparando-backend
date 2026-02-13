@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePagoPersonalDto } from './dto/create-pagos-personal.dto';
 import { UpdatePagoPersonalDto } from './dto/update-pagos-personal.dto';
-
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PagosPersonalService {
@@ -60,16 +60,33 @@ export class PagosPersonalService {
   remove(id: string) {
     return this.prisma.pagoPersonal.delete({ where: { id } });
   }
-  async findAll({ where, page, limit, sort, order }) {
+  async findAll({ where = {}, page = 1, limit = 10, sort = 'date', order = 'desc', search,
+    from,
+    to, }) {
     const skip = (page - 1) * limit;
+    const whereFilter: Prisma.PagoPersonalWhereInput = {
+      ...where,
+      ...(search
+        ? { employeeName: { contains: search, mode: 'insensitive' } }
+        : {}),
+      ...(from || to
+        ? {
+          date: {
+            ...(from ? { gte: from } : {}), // si date es String en el schema
+            ...(to ? { lte: to } : {}),
+          },
+        }
+        : {}),
+    };
     const [items, total] = await this.prisma.$transaction([
       this.prisma.pagoPersonal.findMany({
-        where,
+        where: whereFilter,
         skip,
         take: limit,
         orderBy: { [sort]: order },
+
       }),
-      this.prisma.pagoPersonal.count({ where }),
+      this.prisma.pagoPersonal.count({ where: whereFilter }),
     ]);
     return { items, total };
   }

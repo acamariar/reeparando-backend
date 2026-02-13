@@ -33,6 +33,9 @@ export class PagosPersonalController {
   @ApiQuery({ name: '_limit', required: false, type: Number })
   @ApiQuery({ name: '_sort', required: false, type: String })
   @ApiQuery({ name: '_order', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'from', required: false, type: String })
+  @ApiQuery({ name: 'to', required: false, type: String })
   async findAll(
     @Query('employeeId') employeeId: string,
     @Query('projectId') projectId: string,
@@ -41,6 +44,9 @@ export class PagosPersonalController {
     @Query('_sort') _sort = 'date',
     @Query('_order') _order: 'asc' | 'desc' = 'desc',
     @Res() res: Response,
+    @Query('search') search?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
   ) {
     const page = Number(_page) || 1;
     const limit = Number(_limit) || 10;
@@ -56,6 +62,9 @@ export class PagosPersonalController {
       limit,
       sort,
       order,
+      search,
+      from,
+      to,
     });
 
     res.set('x-total-count', total.toString());
