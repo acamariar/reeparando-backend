@@ -12,7 +12,7 @@ export class ProyectosService {
 
   private mapProyecto(p: PrismaProyecto) {
     if (!p) return p;
-    return { ...p, team: p.team ?? [] };
+    return { ...p, team: p.team ?? [], tools: p.tools ?? [] };
   }
   async create(dto: CreateProyectoDto) {
     const created = await this.prisma.proyecto.create({
