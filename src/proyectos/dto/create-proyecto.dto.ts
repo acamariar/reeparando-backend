@@ -67,4 +67,9 @@ export class CreateProyectoDto implements Prisma.ProyectoCreateInput {
     @IsOptional()
     @IsString({ each: true }) tools?: string[];
 
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    budgetphoto?: string;
+
 }

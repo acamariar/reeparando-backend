@@ -65,6 +65,7 @@ model Proyecto {
   endDate     String?       @db.String
   status      ProjectStatus @default(EN_PROGRESO)
   tools       String[]      @default([])
+  budgetphoto String?
 
   @@map("proyectos")
 }

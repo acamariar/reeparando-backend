@@ -30,6 +30,7 @@ export class ProyectosService {
         endDate: dto.endDate,
         status: dto.status ?? ProjectStatus.EN_PROGRESO,
         tools: dto.tools ?? [],
+        budgetphoto: dto.budgetphoto,
       },
     });
     return this.mapProyecto(created);
@@ -101,6 +102,7 @@ export class ProyectosService {
         endDate: dto.endDate,
         status: dto.status,
         tools: dto.tools ? { set: dto.tools } : undefined,
+        budgetphoto: dto.budgetphoto,
       },
     });
     return this.mapProyecto(updated);
