@@ -61,4 +61,10 @@ export class CreateProyectoDto implements Prisma.ProyectoCreateInput {
     @IsOptional()
     @IsEnum(ProjectStatus)
     status?: ProjectStatus;
+
+    @ApiProperty({ required: false, description: 'Herramientas necesarias para el proyecto' })
+    @IsArray()
+    @IsOptional()
+    @IsString({ each: true }) tools?: string[];
+
 }

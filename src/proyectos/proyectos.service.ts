@@ -29,6 +29,7 @@ export class ProyectosService {
         startDate: dto.startDate,                      // requerido
         endDate: dto.endDate,
         status: dto.status ?? ProjectStatus.EN_PROGRESO,
+        tools: dto.tools ?? [],
       },
     });
     return this.mapProyecto(created);
@@ -99,6 +100,7 @@ export class ProyectosService {
         startDate: dto.startDate,          // si en Update DTO es opcional, deja así
         endDate: dto.endDate,
         status: dto.status,
+        tools: dto.tools ? { set: dto.tools } : undefined,
       },
     });
     return this.mapProyecto(updated);

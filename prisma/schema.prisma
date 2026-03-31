@@ -51,61 +51,62 @@ model Empleado {
 }
 
 model Proyecto {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   client      String?
   address     String?
   category    String?
-  budget      Float    @default(0)
+  budget      Float         @default(0)
   dueDate     String?
-  progress    Float?   @default(0)
+  progress    Float?        @default(0)
   description String?
-  team       String[] @default([])
-  startDate  String   @db.String  
-  endDate    String?  @db.String  
-  status     ProjectStatus @default(EN_PROGRESO)
+  team        String[]      @default([])
+  startDate   String        @db.String
+  endDate     String?       @db.String
+  status      ProjectStatus @default(EN_PROGRESO)
+  tools       String[]      @default([])
 
   @@map("proyectos")
 }
 
 model Cliente {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  firstName String
-  lastName  String
-  phone     String?
-  email     String?
-  address   String?
-  city      String?
-  state     String?
-  zip       String?
-  dni       String?
-  notes     String?
-  createdAt String   @default("")
-  referenceMedium String?  @default("")
-  generatedSale   String?  @default("")
-  
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstName       String
+  lastName        String
+  phone           String?
+  email           String?
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+  dni             String?
+  notes           String?
+  createdAt       String  @default("")
+  referenceMedium String? @default("")
+  generatedSale   String? @default("")
+
   @@map("clientes")
 }
 
 model Tiempo {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   projectId  String
   employeeId String
   date       String
   hours      Float
   hourlyRate Float?
-  amount     Float    @default(0)
+  amount     Float   @default(0)
   notes      String?
 
   @@map("tiempos")
 }
 
 model PagoPersonal {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   employeeId String
   projectId  String?
   date       String
-  type       String   // "pago" | "adelanto"
+  type       String // "pago" | "adelanto"
   amount     Float
   notes      String?
 
@@ -113,7 +114,7 @@ model PagoPersonal {
 }
 
 model GastoProyecto {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   projectId  String
   concept    String
   category   String
