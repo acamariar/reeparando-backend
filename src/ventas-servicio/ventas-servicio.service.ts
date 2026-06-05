@@ -101,7 +101,6 @@ export class VentasServicioService {
                 serviceType: dto.serviceType,
                 paymentMethod: dto.paymentMethod,
                 collaboratorId: dto.collaboratorId,
-                collaboratorName: dto.collaboratorName,
                 clientId: dto.clientId,
                 clientName: dto.clientName,
                 amount,
