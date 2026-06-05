@@ -14,6 +14,23 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum MetodoCobroServicio {
+  EFECTIVO
+  TRANSFERENCIA
+}
+
+enum TipoMovimientoColaborador {
+  VENTA
+  PAGO
+  AJUSTE
+  LIQUIDACION
+}
+
+enum DireccionCuentaColaborador {
+  COLABORADOR_DEBE_EMPRESA
+  EMPRESA_DEBE_COLABORADOR
+}
+
 model Usuario {
   id      String @id @default(auto()) @map("_id") @db.ObjectId
   usuario String
@@ -125,4 +142,81 @@ model GastoProyecto {
   invoiceRef String? @unique
 
   @@map("gastosProyecto")
+}
+
+model VentaServicio {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  date              String
+  description       String
+  serviceType       String
+  paymentMethod     MetodoCobroServicio
+  collaboratorId    String?             @db.ObjectId
+  collaborator      Colaborador?        @relation(fields: [collaboratorId], references: [id])
+  clientId          String?
+  clientName        String?
+  amount            Float               @default(0)
+  commissionPercent Float               @default(0)
+  commissionAmount  Float               @default(0)
+  companyNet        Float               @default(0)
+  notes             String?
+  createdAt         String              @default("")
+  updatedAt         String?
+  deletedAt         String?
+  deletedReason     String?
+
+  movimientos MovimientoCuentaColaborador[]
+
+  @@map("ventasServicios")
+}
+
+model VentaServicioComision {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  saleId     String
+  employeeId String
+  percentage Float   @default(0)
+  amount     Float   @default(0)
+  paidAt     String?
+  notes      String?
+  deletedAt  String?
+
+  @@map("ventasServiciosComisiones")
+}
+
+model Colaborador {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstName     String
+  lastName      String
+  phone         String?
+  email         String?
+  alias         String?
+  notes         String?
+  active        Boolean @default(true)
+  saldoActual   Float   @default(0)
+  createdAt     String  @default("")
+  deletedAt     String?
+  deletedReason String?
+
+  ventas      VentaServicio[]
+  movimientos MovimientoCuentaColaborador[]
+
+  @@map("colaboradores")
+}
+
+model MovimientoCuentaColaborador {
+  id             String                     @id @default(auto()) @map("_id") @db.ObjectId
+  collaboratorId String                     @db.ObjectId
+  collaborator   Colaborador                @relation(fields: [collaboratorId], references: [id])
+  saleId         String?                    @db.ObjectId
+  sale           VentaServicio?             @relation(fields: [saleId], references: [id])
+  type           TipoMovimientoColaborador
+  direction      DireccionCuentaColaborador
+  amount         Float                      @default(0)
+  paidAmount     Float                      @default(0)
+  pendingAmount  Float                      @default(0)
+  createdAt      String
+  paidAt         String?
+  notes          String?
+  deletedAt      String?
+
+  @@map("movimientosCuentaColaborador")
 }

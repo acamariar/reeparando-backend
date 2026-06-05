@@ -10,6 +10,8 @@ import { PagosPersonalModule } from './pagos-personal/pagos-personal.module';
 import { GastosProyectoModule } from './gastos-proyecto/gastos-proyecto.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ConfigModule } from '@nestjs/config';
+import { VentasServicioModule } from './ventas-servicio/ventas-servicio.module';
+import { ColaboradoresModule } from './colaboradores/colaboradores.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // <- carga .env y lo expone en process.env
@@ -21,6 +23,8 @@ import { ConfigModule } from '@nestjs/config';
     GastosProyectoModule,
     PagosPersonalModule,
     ClientesModule,
+    VentasServicioModule,
+    ColaboradoresModule,
   ],
   providers: [AppService],
 })
