@@ -14,7 +14,15 @@ import { UpdateMovimientoCuentaColaboradorDto } from './dto/update-movimiento-cu
 @Injectable()
 export class VentasServicioService {
     constructor(private prisma: PrismaService) { }
-
+    private getSaleImpact(sale: {
+        paymentMethod: MetodoCobroServicio;
+        commissionAmount: number;
+        companyNet: number;
+    }) {
+        return sale.paymentMethod === MetodoCobroServicio.EFECTIVO
+            ? -Number(sale.companyNet ?? 0)
+            : Number(sale.commissionAmount ?? 0);
+    }
     private today() {
         return new Date().toISOString().slice(0, 10);
     }
@@ -219,13 +227,25 @@ export class VentasServicioService {
     async updateSale(id: string, dto: UpdateVentaServicioDto) {
         const current = await this.findOneSale(id);
 
-        await this.reverseSaleEffects(current);
+        // 1) Revertir el impacto anterior
+        if (current.collaboratorId) {
+            const reverseOldImpact = this.getSaleImpact(current) * -1;
 
+            await this.prisma.colaborador.update({
+                where: { id: current.collaboratorId },
+                data: {
+                    saldoActual: { increment: reverseOldImpact },
+                },
+            });
+        }
+
+        // 2) Anular movimientos viejos de esa venta
         await this.prisma.movimientoCuentaColaborador.updateMany({
-            where: { saleId: id, deletedAt: null },
+            where: { saleId: id },
             data: { deletedAt: this.nowIso() },
         });
 
+        // 3) Recalcular montos con los nuevos datos
         const merged = {
             ...current,
             ...dto,
@@ -234,6 +254,7 @@ export class VentasServicioService {
         const { amount, commissionPercent, commissionAmount, companyNet } =
             this.calcAmounts(merged);
 
+        // 4) Actualizar la venta
         const updated = await this.prisma.ventaServicio.update({
             where: { id },
             data: {
@@ -246,7 +267,21 @@ export class VentasServicioService {
             },
         });
 
+        // 5) Aplicar el nuevo impacto
         if (updated.collaboratorId) {
+            const impact = this.getSaleImpact({
+                paymentMethod: updated.paymentMethod,
+                commissionAmount,
+                companyNet,
+            });
+
+            await this.prisma.colaborador.update({
+                where: { id: updated.collaboratorId },
+                data: {
+                    saldoActual: { increment: impact },
+                },
+            });
+
             const direction =
                 updated.paymentMethod === MetodoCobroServicio.TRANSFERENCIA
                     ? DireccionCuentaColaborador.EMPRESA_DEBE_COLABORADOR
@@ -270,28 +305,34 @@ export class VentasServicioService {
                     notes: updated.notes ?? undefined,
                 },
             });
-
-            await this.applySaleEffects({
-                collaboratorId: updated.collaboratorId,
-                paymentMethod: updated.paymentMethod,
-                commissionAmount,
-                companyNet,
-            });
         }
 
         return updated;
     }
-
     async removeSale(id: string, reason?: string) {
         const current = await this.findOneSale(id);
 
-        await this.reverseSaleEffects(current);
+        // 1) Revertir el impacto de la venta sobre el saldo del colaborador
+        if (current.collaboratorId) {
+            const reverseImpact = this.getSaleImpact(current) * -1;
 
+            await this.prisma.colaborador.update({
+                where: { id: current.collaboratorId },
+                data: {
+                    saldoActual: { increment: reverseImpact },
+                },
+            });
+        }
+
+        // 2) Marcar como eliminado el movimiento asociado a esa venta
         await this.prisma.movimientoCuentaColaborador.updateMany({
-            where: { saleId: id, deletedAt: null },
-            data: { deletedAt: this.nowIso() },
+            where: { saleId: id },
+            data: {
+                deletedAt: this.nowIso(),
+            },
         });
 
+        // 3) Marcar como eliminada la venta
         return this.prisma.ventaServicio.update({
             where: { id },
             data: {
