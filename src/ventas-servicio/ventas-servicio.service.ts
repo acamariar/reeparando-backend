@@ -385,9 +385,16 @@ export class VentasServicioService {
         const skip = (page - 1) * take;
 
         const where: Prisma.MovimientoCuentaColaboradorWhereInput = {
-            deletedAt: null,
-            ...(params.collaboratorId ? { collaboratorId: params.collaboratorId } : {}),
-            ...(params.saleId ? { saleId: params.saleId } : {}),
+            AND: [
+                {
+                    OR: [
+                        { deletedAt: null },
+                        { deletedAt: { isSet: false } },
+                    ],
+                },
+                ...(params.collaboratorId ? [{ collaboratorId: params.collaboratorId }] : []),
+                ...(params.saleId ? [{ saleId: params.saleId }] : []),
+            ],
         };
 
         const [items, total] = await this.prisma.$transaction([
@@ -405,7 +412,13 @@ export class VentasServicioService {
 
     async findOneMovement(id: string) {
         const item = await this.prisma.movimientoCuentaColaborador.findFirst({
-            where: { id, deletedAt: null },
+            where: {
+                id,
+                OR: [
+                    { deletedAt: null },
+                    { deletedAt: { isSet: false } },
+                ],
+            },
         });
 
         if (!item) {
