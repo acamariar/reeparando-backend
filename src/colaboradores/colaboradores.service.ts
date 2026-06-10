@@ -28,6 +28,8 @@ export class ColaboradoresService {
                 active: dto.active ?? true,
                 createdAt: dto.createdAt ?? this.today(),
                 saldoActual: 0,
+                deletedAt: null,
+                deletedReason: null,
             },
         });
     }

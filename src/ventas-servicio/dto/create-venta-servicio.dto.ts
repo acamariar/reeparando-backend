@@ -28,11 +28,6 @@ export class CreateVentaServicioDto {
     @ApiProperty({ required: false })
     @IsOptional()
     @IsString()
-    collaboratorName?: string;
-
-    @ApiProperty({ required: false })
-    @IsOptional()
-    @IsString()
     clientId?: string;
 
     @ApiProperty({ required: false })
