@@ -137,6 +137,7 @@ export class VentasServicioService {
                     pendingAmount: movementAmount,
                     createdAt: this.today(),
                     notes: dto.notes,
+                    deletedAt: null,
                 },
             });
 
