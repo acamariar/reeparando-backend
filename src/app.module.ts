@@ -12,6 +12,7 @@ import { ClientesModule } from './clientes/clientes.module';
 import { ConfigModule } from '@nestjs/config';
 import { VentasServicioModule } from './ventas-servicio/ventas-servicio.module';
 import { ColaboradoresModule } from './colaboradores/colaboradores.module';
+import { ReportesModule } from './reportes/reportes.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // <- carga .env y lo expone en process.env
@@ -25,6 +26,7 @@ import { ColaboradoresModule } from './colaboradores/colaboradores.module';
     ClientesModule,
     VentasServicioModule,
     ColaboradoresModule,
+    ReportesModule
   ],
   providers: [AppService],
 })

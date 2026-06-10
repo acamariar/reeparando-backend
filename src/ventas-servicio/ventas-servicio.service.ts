@@ -116,7 +116,7 @@ export class VentasServicioService {
                 commissionAmount,
                 companyNet,
                 notes: dto.notes,
-                createdAt: dto.createdAt ?? this.today(),
+                createdAt: dto.createdAt ?? this.nowIso(),
                 updatedAt: this.nowIso(),
                 deletedAt: null,
                 deletedReason: null,
@@ -143,7 +143,7 @@ export class VentasServicioService {
                     amount: movementAmount,
                     paidAmount: 0,
                     pendingAmount: movementAmount,
-                    createdAt: this.today(),
+                    createdAt: this.nowIso(),
                     notes: dto.notes,
                     deletedAt: null,
                 },
@@ -194,8 +194,6 @@ export class VentasServicioService {
                 : {}),
         };
 
-        const sortField = params.sort ?? 'date';
-        const sortOrder = params.order ?? 'desc';
 
         const [items, total] = await this.prisma.$transaction([
             this.prisma.ventaServicio.findMany({
@@ -203,7 +201,7 @@ export class VentasServicioService {
                 take,
                 where,
                 orderBy: {
-                    [sortField]: sortOrder,
+                    createdAt: 'desc',
                 } as Prisma.VentaServicioOrderByWithRelationInput,
             }),
             this.prisma.ventaServicio.count({ where }),
@@ -301,7 +299,7 @@ export class VentasServicioService {
                     amount: movementAmount,
                     paidAmount: 0,
                     pendingAmount: movementAmount,
-                    createdAt: this.today(),
+                    createdAt: this.nowIso(),
                     notes: updated.notes ?? undefined,
                 },
             });
@@ -364,7 +362,7 @@ export class VentasServicioService {
                 pendingAmount,
                 paidAt: dto.paidAt,
                 notes: dto.notes,
-                createdAt: this.today(),
+                createdAt: this.nowIso(),
             },
         });
 
@@ -385,43 +383,28 @@ export class VentasServicioService {
         const skip = (page - 1) * take;
 
         const where: Prisma.MovimientoCuentaColaboradorWhereInput = {
-            AND: [
-                {
-                    OR: [
-                        { deletedAt: null },
-                        { deletedAt: { isSet: false } },
-                    ],
-                },
-                ...(params.collaboratorId ? [{ collaboratorId: params.collaboratorId }] : []),
-                ...(params.saleId ? [{ saleId: params.saleId }] : []),
-            ],
+            ...(params.collaboratorId ? { collaboratorId: params.collaboratorId } : {}),
+            ...(params.saleId ? { saleId: params.saleId } : {}),
         };
 
-        const [items, total] = await this.prisma.$transaction([
-            this.prisma.movimientoCuentaColaborador.findMany({
-                skip,
-                take,
-                where,
-                orderBy: { createdAt: 'desc' },
-            }),
-            this.prisma.movimientoCuentaColaborador.count({ where }),
-        ]);
+        const allItems = await this.prisma.movimientoCuentaColaborador.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+        });
+
+        const activeItems = allItems.filter((m) => m.deletedAt == null);
+        const total = activeItems.length;
+        const items = activeItems.slice(skip, skip + take);
 
         return { items, total };
     }
 
     async findOneMovement(id: string) {
         const item = await this.prisma.movimientoCuentaColaborador.findFirst({
-            where: {
-                id,
-                OR: [
-                    { deletedAt: null },
-                    { deletedAt: { isSet: false } },
-                ],
-            },
+            where: { id },
         });
 
-        if (!item) {
+        if (!item || item.deletedAt != null) {
             throw new NotFoundException('Movimiento no encontrado');
         }
 

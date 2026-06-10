@@ -60,29 +60,10 @@ export class VentasServicioController {
         res?.set('x-total-count', total.toString());
         return res?.json(items);
     }
-
-    @Get(':id')
-    findOneSale(@Param('id') id: string) {
-        return this.ventasService.findOneSale(id);
-    }
-
-    @Patch(':id')
-    updateSale(@Param('id') id: string, @Body() dto: UpdateVentaServicioDto) {
-        return this.ventasService.updateSale(id, dto);
-    }
-
-    @Delete(':id')
-    removeSale(@Param('id') id: string, @Query('reason') reason?: string) {
-        return this.ventasService.removeSale(id, reason);
-    }
-
-    // Movimientos
-
     @Post('movimientos')
     createMovement(@Body() dto: CreateMovimientoCuentaColaboradorDto) {
         return this.ventasService.createMovement(dto);
     }
-
     @Get('movimientos')
     @ApiQuery({ name: 'collaboratorId', required: false, type: String })
     @ApiQuery({ name: 'saleId', required: false, type: String })
@@ -105,7 +86,6 @@ export class VentasServicioController {
         res?.set('x-total-count', total.toString());
         return res?.json(items);
     }
-
     @Get('movimientos/:id')
     findOneMovement(@Param('id') id: string) {
         return this.ventasService.findOneMovement(id);
@@ -123,4 +103,27 @@ export class VentasServicioController {
     removeMovement(@Param('id') id: string) {
         return this.ventasService.removeMovement(id);
     }
+
+    @Get(':id')
+    findOneSale(@Param('id') id: string) {
+        return this.ventasService.findOneSale(id);
+    }
+
+    @Patch(':id')
+    updateSale(@Param('id') id: string, @Body() dto: UpdateVentaServicioDto) {
+        return this.ventasService.updateSale(id, dto);
+    }
+
+    @Delete(':id')
+    removeSale(@Param('id') id: string, @Query('reason') reason?: string) {
+        return this.ventasService.removeSale(id, reason);
+    }
+
+    // Movimientos
+
+
+
+
+
+
 }
