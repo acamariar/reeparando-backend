@@ -110,6 +110,8 @@ export class VentasServicioService {
                 notes: dto.notes,
                 createdAt: dto.createdAt ?? this.today(),
                 updatedAt: this.nowIso(),
+                deletedAt: null,
+                deletedReason: null,
             },
         });
 
