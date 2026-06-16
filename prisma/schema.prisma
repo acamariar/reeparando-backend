@@ -221,3 +221,20 @@ model MovimientoCuentaColaborador {
 
   @@map("movimientosCuentaColaborador")
 }
+
+model CompraEmpresa {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  date          String
+  concept       String
+  category      String
+  amount        Float
+  provider      String?
+  invoiceRef    String  @unique
+  notes         String?
+  createdAt     String  @default("")
+  updatedAt     String?
+  deletedAt     String?
+  deletedReason String?
+
+  @@map("comprasEmpresa")
+}

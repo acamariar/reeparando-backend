@@ -6,6 +6,7 @@ type VentaResumen = {
     id: string;
     date: string;
     createdAt: string;
+    serviceCode?: string | null;
     serviceType: string;
     paymentMethod: string;
     amount: number;
@@ -24,17 +25,19 @@ type ProyectoResumen = {
     totalProfit: number;
 };
 
+type CompraResumen = {
+    id: string;
+    date: string;
+    concept: string;
+    category: string;
+    provider?: string | null;
+    invoiceRef: string;
+    amount: number;
+};
+
 @Injectable()
 export class ReportesService {
     constructor(private prisma: PrismaService) { }
-
-    private toStartIso(date: string) {
-        return new Date(`${date}T00:00:00.000Z`).toISOString();
-    }
-
-    private toEndIso(date: string) {
-        return new Date(`${date}T23:59:59.999Z`).toISOString();
-    }
 
     private money(value?: number | null) {
         return Number(value ?? 0);
@@ -45,34 +48,31 @@ export class ReportesService {
             throw new BadRequestException('from y to son obligatorios');
         }
 
-        const fromIso = this.toStartIso(from);
-        const toIso = this.toEndIso(to);
-
         const ventas = await this.prisma.ventaServicio.findMany({
             where: {
                 date: {
                     gte: from,
                     lte: to,
                 },
+                deletedAt: null,
             },
             orderBy: {
                 date: 'desc',
             },
         });
 
-        const ventasActivas = ventas.filter((v) => v.deletedAt == null);
-
-        const salesSummary = ventasActivas.reduce(
+        const ventasResumen = ventas.reduce(
             (acc, venta) => {
                 acc.count += 1;
                 acc.totalAmount += this.money(venta.amount);
                 acc.totalCommissionAmount += this.money(venta.commissionAmount);
                 acc.totalCompanyNet += this.money(venta.companyNet);
 
-                const item: VentaResumen = {
+                acc.items.push({
                     id: venta.id,
                     date: venta.date,
                     createdAt: venta.createdAt,
+                    serviceCode: venta.serviceCode ?? null,
                     serviceType: venta.serviceType,
                     paymentMethod: venta.paymentMethod,
                     amount: this.money(venta.amount),
@@ -80,9 +80,8 @@ export class ReportesService {
                     companyNet: this.money(venta.companyNet),
                     collaboratorId: venta.collaboratorId,
                     clientName: venta.clientName,
-                };
+                });
 
-                acc.items.push(item);
                 return acc;
             },
             {
@@ -124,7 +123,7 @@ export class ReportesService {
             return acc;
         }, {});
 
-        const projectDetails = proyectos.map((p) => {
+        const proyectosResumen = proyectos.map((p) => {
             const totalExpenses = this.money(gastosPorProyecto[p.id] ?? 0);
             const budget = this.money(p.budget);
             const totalProfit = Number((budget - totalExpenses).toFixed(2));
@@ -141,7 +140,7 @@ export class ReportesService {
             return item;
         });
 
-        const projectSummary = projectDetails.reduce(
+        const projectsSummary = proyectosResumen.reduce(
             (acc, proyecto) => {
                 acc.count += 1;
                 acc.totalBudget += proyecto.budget;
@@ -159,20 +158,64 @@ export class ReportesService {
             }
         );
 
-        const totalCompanyProfit = Number(
-            (salesSummary.totalCompanyNet + projectSummary.totalProfit).toFixed(2)
+        const compras = await this.prisma.compraEmpresa.findMany({
+            where: {
+                date: {
+                    gte: from,
+                    lte: to,
+                },
+                deletedAt: null,
+            },
+            orderBy: {
+                date: 'desc',
+            },
+        });
+
+        const comprasResumen = compras.reduce(
+            (acc, compra) => {
+                acc.count += 1;
+                acc.totalAmount += this.money(compra.amount);
+
+                acc.items.push({
+                    id: compra.id,
+                    date: compra.date,
+                    concept: compra.concept,
+                    category: compra.category,
+                    provider: compra.provider,
+                    invoiceRef: compra.invoiceRef,
+                    amount: this.money(compra.amount),
+                });
+
+                return acc;
+            },
+            {
+                count: 0,
+                totalAmount: 0,
+                items: [] as CompraResumen[],
+            }
+        );
+
+        const totalGrossProfit = Number(
+            (ventasResumen.totalCompanyNet + projectsSummary.totalProfit).toFixed(2)
+        );
+
+        const totalNetProfit = Number(
+            (totalGrossProfit - comprasResumen.totalAmount).toFixed(2)
         );
 
         return {
             from,
             to,
-            sales: salesSummary,
-            projects: projectSummary,
+            sales: ventasResumen,
+            projects: projectsSummary,
+            purchases: comprasResumen,
             totals: {
-                companyProfit: totalCompanyProfit,
-                collaboratorCommissions: Number(salesSummary.totalCommissionAmount.toFixed(2)),
-                salesCompanyNet: Number(salesSummary.totalCompanyNet.toFixed(2)),
-                projectProfit: Number(projectSummary.totalProfit.toFixed(2)),
+                companyProfit: totalGrossProfit,
+                companyProfitAfterPurchases: totalNetProfit,
+                collaboratorCommissions: Number(ventasResumen.totalCommissionAmount.toFixed(2)),
+                salesCompanyNet: Number(ventasResumen.totalCompanyNet.toFixed(2)),
+                projectProfit: Number(projectsSummary.totalProfit.toFixed(2)),
+                purchaseAmount: Number(comprasResumen.totalAmount.toFixed(2)),
             },
         };
     }
