@@ -10,6 +10,7 @@ import { CreateVentaServicioDto } from './dto/create-venta-servicio.dto';
 import { UpdateVentaServicioDto } from './dto/update-venta-servicio.dto';
 import { CreateMovimientoCuentaColaboradorDto } from './dto/create-movimiento-cuenta-colaborador.dto';
 import { UpdateMovimientoCuentaColaboradorDto } from './dto/update-movimiento-cuenta-colaborador.dto';
+import { ConflictException } from '@nestjs/common';
 
 @Injectable()
 export class VentasServicioService {
@@ -101,11 +102,18 @@ export class VentasServicioService {
     async createSale(dto: CreateVentaServicioDto) {
         const { amount, commissionPercent, commissionAmount, companyNet } =
             this.calcAmounts(dto);
+        const exists = await this.prisma.ventaServicio.findFirst({
+            where: { serviceCode: dto.serviceCode, deletedAt: null },
+        });
 
+        if (exists) {
+            throw new ConflictException('El código de venta ya existe');
+        }
         const sale = await this.prisma.ventaServicio.create({
             data: {
                 date: dto.date,
                 description: dto.description,
+                serviceCode: dto.serviceCode,
                 serviceType: dto.serviceType,
                 paymentMethod: dto.paymentMethod,
                 collaboratorId: dto.collaboratorId,
@@ -181,6 +189,7 @@ export class VentasServicioService {
                         { description: { contains: params.search, mode: 'insensitive' } },
                         { serviceType: { contains: params.search, mode: 'insensitive' } },
                         { clientName: { contains: params.search, mode: 'insensitive' } },
+                        { serviceCode: { contains: params.search, mode: 'insensitive' } }
                     ],
                 }
                 : {}),

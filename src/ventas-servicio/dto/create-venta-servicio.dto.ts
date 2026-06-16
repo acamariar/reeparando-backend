@@ -12,6 +12,10 @@ export class CreateVentaServicioDto {
     @IsString()
     description!: string;
 
+    @ApiProperty({ example: 'VT0568' })
+    @IsString()
+    serviceCode!: string;
+
     @ApiProperty()
     @IsString()
     serviceType!: string;

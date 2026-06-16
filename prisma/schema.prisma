@@ -147,6 +147,7 @@ model GastoProyecto {
 model VentaServicio {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   date              String
+  serviceCode       String              @unique
   description       String
   serviceType       String
   paymentMethod     MetodoCobroServicio

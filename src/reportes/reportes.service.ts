@@ -50,13 +50,13 @@ export class ReportesService {
 
         const ventas = await this.prisma.ventaServicio.findMany({
             where: {
-                createdAt: {
-                    gte: fromIso,
-                    lte: toIso,
+                date: {
+                    gte: from,
+                    lte: to,
                 },
             },
             orderBy: {
-                createdAt: 'desc',
+                date: 'desc',
             },
         });
 
