@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { Prisma } from '@prisma/client/scripts/default-index.js';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ClientesService {
@@ -29,14 +29,13 @@ export class ClientesService {
     const skip = (page - 1) * take;
     const sortField = params.sort ?? 'lastName';
     const sortOrder = params.order ?? 'asc';
-    const where: Prisma.TransactionClient = params.search
+    const where: Prisma.ClienteWhereInput = params.search
       ? {
         OR: [
           { firstName: { contains: params.search, mode: 'insensitive' } },
           { lastName: { contains: params.search, mode: 'insensitive' } },
           { phone: { contains: params.search, mode: 'insensitive' } },
           { email: { contains: params.search, mode: 'insensitive' } },
-          { alias: { contains: params.search, mode: 'insensitive' } },
         ],
       }
       : {};
