@@ -12,9 +12,8 @@ export class CreateClienteDto implements Prisma.ClienteCreateInput {
     lastName: string;
 
     @ApiProperty({ required: false })
-    @IsOptional()
     @IsString()
-    phone?: string;
+    phone!: string;
 
     @ApiProperty({ required: false })
     @IsOptional()
