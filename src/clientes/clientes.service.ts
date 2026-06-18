@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
+import { Prisma } from '@prisma/client/scripts/default-index.js';
 
 @Injectable()
 export class ClientesService {
@@ -21,20 +22,32 @@ export class ClientesService {
     limit?: number;
     sort?: string;
     order?: 'asc' | 'desc';
+    search?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
     const take = Math.max(1, params.limit ?? 10);
     const skip = (page - 1) * take;
     const sortField = params.sort ?? 'lastName';
     const sortOrder = params.order ?? 'asc';
-
+    const where: Prisma.TransactionClient = params.search
+      ? {
+        OR: [
+          { firstName: { contains: params.search, mode: 'insensitive' } },
+          { lastName: { contains: params.search, mode: 'insensitive' } },
+          { phone: { contains: params.search, mode: 'insensitive' } },
+          { email: { contains: params.search, mode: 'insensitive' } },
+          { alias: { contains: params.search, mode: 'insensitive' } },
+        ],
+      }
+      : {};
     const [items, total] = await this.prisma.$transaction([
       this.prisma.cliente.findMany({
         skip,
         take,
+        where,
         orderBy: { [sortField]: sortOrder },
       }),
-      this.prisma.cliente.count(),
+      this.prisma.cliente.count({ where }),
     ]);
 
     return { items, total };
