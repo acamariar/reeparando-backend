@@ -24,11 +24,34 @@ enum TipoMovimientoColaborador {
   PAGO
   AJUSTE
   LIQUIDACION
+  SEGUIMIENTO
 }
 
 enum DireccionCuentaColaborador {
   COLABORADOR_DEBE_EMPRESA
   EMPRESA_DEBE_COLABORADOR
+}
+
+enum TipoVisitaSeguimiento {
+  RELEVAMIENTO
+  TECNICA
+}
+
+enum OrigenClienteSeguimiento {
+  GOOGLE_ADS
+  FACEBOOK_ADS
+  INSTAGRAM_ADS
+  REFERIDO
+  RECURRENTE
+  WHATSAPP_DIRECTO
+}
+
+enum EstadoSeguimiento {
+  A_COORDINAR
+  APROBADO
+  RECHAZADO
+  CULMINADO
+  GARANTIA
 }
 
 model Usuario {
@@ -88,10 +111,10 @@ model Proyecto {
 }
 
 model Cliente {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
   firstName       String
   lastName        String
-  phone           String  @unique
+  phone           String        @unique
   email           String?
   address         String?
   city            String?
@@ -99,9 +122,10 @@ model Cliente {
   zip             String?
   dni             String?
   notes           String?
-  createdAt       String  @default("")
-  referenceMedium String? @default("")
-  generatedSale   String? @default("")
+  createdAt       String        @default("")
+  referenceMedium String?       @default("")
+  generatedSale   String?       @default("")
+  seguimientos    Seguimiento[]
 
   @@map("clientes")
 }
@@ -197,27 +221,33 @@ model Colaborador {
   deletedAt     String?
   deletedReason String?
 
-  ventas      VentaServicio[]
-  movimientos MovimientoCuentaColaborador[]
+  ventas               VentaServicio[]
+  movimientos          MovimientoCuentaColaborador[]
+  seguimientos         Seguimiento[]
+  seguimientoComisions SeguimientoComision[]
 
   @@map("colaboradores")
 }
 
 model MovimientoCuentaColaborador {
-  id             String                     @id @default(auto()) @map("_id") @db.ObjectId
-  collaboratorId String                     @db.ObjectId
-  collaborator   Colaborador                @relation(fields: [collaboratorId], references: [id])
-  saleId         String?                    @db.ObjectId
-  sale           VentaServicio?             @relation(fields: [saleId], references: [id])
-  type           TipoMovimientoColaborador
-  direction      DireccionCuentaColaborador
-  amount         Float                      @default(0)
-  paidAmount     Float                      @default(0)
-  pendingAmount  Float                      @default(0)
-  createdAt      String
-  paidAt         String?
-  notes          String?
-  deletedAt      String?
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  collaboratorId String         @db.ObjectId
+  collaborator   Colaborador    @relation(fields: [collaboratorId], references: [id])
+  saleId         String?        @db.ObjectId
+  sale           VentaServicio? @relation(fields: [saleId], references: [id])
+
+  seguimientoId String?      @db.ObjectId
+  seguimiento   Seguimiento? @relation(fields: [seguimientoId], references: [id])
+
+  type          TipoMovimientoColaborador
+  direction     DireccionCuentaColaborador
+  amount        Float                      @default(0)
+  paidAmount    Float                      @default(0)
+  pendingAmount Float                      @default(0)
+  createdAt     String
+  paidAt        String?
+  notes         String?
+  deletedAt     String?
 
   @@map("movimientosCuentaColaborador")
 }
@@ -237,4 +267,63 @@ model CompraEmpresa {
   deletedReason String?
 
   @@map("comprasEmpresa")
+}
+
+model SeguimientoComision {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  seguimientoId String      @db.ObjectId
+  seguimiento   Seguimiento @relation(fields: [seguimientoId], references: [id])
+
+  colaboradorId String      @db.ObjectId
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id])
+
+  percentage Float   @default(0)
+  amount     Float   @default(0)
+  paidAt     String?
+  notes      String?
+  deletedAt  String?
+
+  @@map("seguimientosComisiones")
+}
+
+model Seguimiento {
+  id            String               @id @default(auto()) @map("_id") @db.ObjectId
+  numeroVisita  String               @unique
+  paymentMethod MetodoCobroServicio?
+  clientId      String               @db.ObjectId
+  client        Cliente              @relation(fields: [clientId], references: [id])
+
+  colaboradorId String?      @db.ObjectId
+  colaborador   Colaborador? @relation(fields: [colaboradorId], references: [id])
+
+  direccionServicio String
+  tipoVisita        TipoVisitaSeguimiento
+  zona              String?
+  fechaSolicitud    String
+  fechaVisita       String?
+
+  servicioRequerido String
+  tipoServicio      String?
+  origenCliente     OrigenClienteSeguimiento
+  estado            EstadoSeguimiento        @default(A_COORDINAR)
+
+  montoPresupuestado Float @default(0)
+  montoPagadoCliente Float @default(0)
+  montoColaborador   Float @default(0)
+  montoReeparando    Float @default(0)
+
+  fechaFinalizacion     String?
+  fechaLimiteGarantia   String?
+  observacionesCliente  String?
+  observacionesTecnicas String?
+
+  createdAt     String  @default("")
+  updatedAt     String?
+  deletedAt     String?
+  deletedReason String?
+
+  comisiones                   SeguimientoComision[]
+  movimientoCuentaColaboradors MovimientoCuentaColaborador[]
+
+  @@map("seguimientos")
 }

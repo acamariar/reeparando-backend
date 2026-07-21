@@ -1,19 +1,26 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ProjectStatus } from '@prisma/client';
+import { EstadoSeguimiento, ProjectStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
+
+
+//ventaresumen es ahora seguimientos, conserve los nombres para ahorrar tiempo, pero se puede cambiar en el futuro
 type VentaResumen = {
     id: string;
     date: string;
     createdAt: string;
     serviceCode?: string | null;
     serviceType: string;
-    paymentMethod: string;
+    paymentMethod: string | null;
     amount: number;
     commissionAmount: number;
     companyNet: number;
     collaboratorId?: string | null;
     clientName?: string | null;
+
+    numeroVisita?: string | null;
+    fechaSolicitud?: string | null;
+    fechaFinalizacion?: string | null;
 };
 
 type ProyectoResumen = {
@@ -48,40 +55,49 @@ export class ReportesService {
             throw new BadRequestException('from y to son obligatorios');
         }
 
-        const ventas = await this.prisma.ventaServicio.findMany({
+        const ventas = await this.prisma.seguimiento.findMany({
             where: {
-                date: {
+                estado: EstadoSeguimiento.CULMINADO,
+                fechaFinalizacion: {
                     gte: from,
                     lte: to,
                 },
                 deletedAt: null,
             },
             orderBy: {
-                date: 'desc',
+                fechaFinalizacion: 'desc',
+            },
+            include: {
+                client: true,
+                colaborador: true,
             },
         });
 
         const ventasResumen = ventas.reduce(
-            (acc, venta) => {
+            (acc, seguimiento) => {
                 acc.count += 1;
-                acc.totalAmount += this.money(venta.amount);
-                acc.totalCommissionAmount += this.money(venta.commissionAmount);
-                acc.totalCompanyNet += this.money(venta.companyNet);
+                acc.totalAmount += this.money(seguimiento.montoPagadoCliente);
+                acc.totalCommissionAmount += this.money(seguimiento.montoColaborador);
+                acc.totalCompanyNet += this.money(seguimiento.montoReeparando);
 
                 acc.items.push({
-                    id: venta.id,
-                    date: venta.date,
-                    createdAt: venta.createdAt,
-                    serviceCode: venta.serviceCode ?? null,
-                    serviceType: venta.serviceType,
-                    paymentMethod: venta.paymentMethod,
-                    amount: this.money(venta.amount),
-                    commissionAmount: this.money(venta.commissionAmount),
-                    companyNet: this.money(venta.companyNet),
-                    collaboratorId: venta.collaboratorId,
-                    clientName: venta.clientName,
+                    id: seguimiento.id,
+                    date: seguimiento.fechaFinalizacion ?? seguimiento.fechaSolicitud,
+                    createdAt: seguimiento.createdAt,
+                    serviceCode: seguimiento.numeroVisita,
+                    serviceType: seguimiento.tipoServicio ?? seguimiento.tipoVisita,
+                    paymentMethod: seguimiento.paymentMethod ?? null,
+                    amount: this.money(seguimiento.montoPagadoCliente),
+                    commissionAmount: this.money(seguimiento.montoColaborador),
+                    companyNet: this.money(seguimiento.montoReeparando),
+                    collaboratorId: seguimiento.colaboradorId,
+                    clientName: seguimiento.client
+                        ? `${seguimiento.client.firstName} ${seguimiento.client.lastName}`
+                        : null,
+                    numeroVisita: seguimiento.numeroVisita,
+                    fechaSolicitud: seguimiento.fechaSolicitud,
+                    fechaFinalizacion: seguimiento.fechaFinalizacion ?? null,
                 });
-
                 return acc;
             },
             {
@@ -92,7 +108,6 @@ export class ReportesService {
                 items: [] as VentaResumen[],
             }
         );
-
         const proyectos = await this.prisma.proyecto.findMany({
             where: {
                 status: ProjectStatus.FINALIZADA,
