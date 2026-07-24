@@ -33,6 +33,8 @@ export class TiemposController {
   @ApiQuery({ name: '_limit', required: false, type: Number })
   @ApiQuery({ name: '_sort', required: false, type: String })
   @ApiQuery({ name: '_order', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'from', required: false, type: String })
+  @ApiQuery({ name: 'to', required: false, type: String })
   async findAll(
     @Query('projectId') projectId: string,
     @Query('employeeId') employeeId: string,
@@ -40,6 +42,8 @@ export class TiemposController {
     @Query('_limit') _limit: string,
     @Query('_sort') _sort: string,
     @Query('_order') _order: 'asc' | 'desc',
+    @Query('from') from: string,
+    @Query('to') to: string,
     @Res() res: Response,
   ) {
     const page = Number(_page) || 1;
@@ -54,6 +58,8 @@ export class TiemposController {
       limit,
       sort,
       order,
+      from,
+      to,
     });
 
     res.set('x-total-count', total.toString());

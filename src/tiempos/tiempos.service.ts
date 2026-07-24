@@ -26,6 +26,8 @@ export class TiemposService {
     limit?: number;
     sort?: string;
     order?: 'asc' | 'desc';
+    from?: string;
+    to?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
     const take = Math.max(1, params.limit ?? 10);
@@ -37,6 +39,12 @@ export class TiemposService {
     if (params.projectId) where.projectId = params.projectId;
     if (params.employeeId) where.employeeId = params.employeeId;
 
+    if (params.from || params.to) {
+      where.date = {
+        ...(params.from ? { gte: params.from } : {}),
+        ...(params.to ? { lte: params.to } : {}),
+      };
+    }
     const [items, total] = await this.prisma.$transaction([
       this.prisma.tiempo.findMany({
         where,
