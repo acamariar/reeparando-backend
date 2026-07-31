@@ -1,6 +1,6 @@
 // src/usuarios/dto/create-usuario.dto.ts
 import { Prisma } from '@prisma/client';
-import { IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsString } from 'class-validator';
 
 export class CreateUsuarioDto implements Prisma.UsuarioCreateInput {
     @IsString()
@@ -11,4 +11,8 @@ export class CreateUsuarioDto implements Prisma.UsuarioCreateInput {
 
     @IsInt()
     nivel: number;
+
+    @IsBoolean()
+    passwordSet: boolean;
+
 }

@@ -55,10 +55,11 @@ enum EstadoSeguimiento {
 }
 
 model Usuario {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  usuario String
-  clave   String
-  nivel   Int
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  usuario     String
+  clave       String
+  nivel       Int
+  passwordSet Boolean @default(false)
 
   @@map("usuarios")
 }

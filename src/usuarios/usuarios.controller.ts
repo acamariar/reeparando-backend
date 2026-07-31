@@ -12,9 +12,8 @@ export class UsuariosController {
   @Get()
   findAll(
     @Query('usuario') usuario?: string,
-    @Query('clave') clave?: string,
   ) {
-    return this.service.findAll(usuario, clave);
+    return this.service.findAll(usuario);
   }
 
   @Get(':id')
@@ -25,6 +24,14 @@ export class UsuariosController {
   @Post()
   create(@Body() dto: CreateUsuarioDto) {
     return this.service.create(dto);
+  }
+
+  @Post('login')
+  login(
+    @Body('usuario') usuario: string,
+    @Body('clave') clave: string,
+  ) {
+    return this.service.login(usuario, clave);
   }
 
   @Patch(':id')
