@@ -61,6 +61,10 @@ model Usuario {
   nivel       Int
   passwordSet Boolean @default(false)
 
+  seguimientosCreados  Seguimiento[] @relation("SeguimientoCreatedBy")
+  seguimientosEditados Seguimiento[] @relation("SeguimientoUpdatedBy")
+  seguimientos         Seguimiento[]
+
   @@map("usuarios")
 }
 
@@ -323,8 +327,16 @@ model Seguimiento {
   deletedAt     String?
   deletedReason String?
 
+  createdById String?  @db.ObjectId
+  createdBy   Usuario? @relation("SeguimientoCreatedBy", fields: [createdById], references: [id])
+
+  updatedById String?  @db.ObjectId
+  updatedBy   Usuario? @relation("SeguimientoUpdatedBy", fields: [updatedById], references: [id])
+
   comisiones                   SeguimientoComision[]
   movimientoCuentaColaboradors MovimientoCuentaColaborador[]
+  usuario                      Usuario?                      @relation(fields: [usuarioId], references: [id])
+  usuarioId                    String?                       @db.ObjectId
 
   @@map("seguimientos")
 }

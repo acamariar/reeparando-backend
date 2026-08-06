@@ -7,7 +7,9 @@ import {
     Patch,
     Post,
     Query,
+    Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -16,6 +18,7 @@ import { SeguimientosService } from './seguimientos.service';
 import { CreateSeguimientoDto } from './dto/create-seguimiento.dto';
 import { UpdateSeguimientoDto } from './dto/update-seguimiento.dto';
 import { FinalizarSeguimientoDto } from './dto/finalizar-seguimiento.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 
 @ApiTags('seguimientos')
 @Controller('seguimientos')
@@ -23,11 +26,13 @@ export class SeguimientosController {
     constructor(private readonly seguimientosService: SeguimientosService) { }
 
     @Post()
-    create(@Body() dto: CreateSeguimientoDto) {
-        return this.seguimientosService.create(dto);
+    @UseGuards(JwtAuthGuard)
+    create(@Body() dto: CreateSeguimientoDto, @Req() req: any) {
+        return this.seguimientosService.create(dto, req.user);
     }
 
     @Get()
+    @UseGuards(JwtAuthGuard)
     @ApiQuery({ name: 'search', required: false, type: String })
     @ApiQuery({ name: 'estado', required: false, enum: EstadoSeguimiento })
     @ApiQuery({ name: 'tipoVisita', required: false, enum: TipoVisitaSeguimiento })
@@ -74,15 +79,16 @@ export class SeguimientosController {
     findOne(@Param('id') id: string) {
         return this.seguimientosService.findOne(id);
     }
-
+    @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    update(@Param('id') id: string, @Body() dto: UpdateSeguimientoDto) {
-        return this.seguimientosService.update(id, dto);
+    update(@Param('id') id: string, @Body() dto: UpdateSeguimientoDto, @Req() req: any) {
+        return this.seguimientosService.update(id, dto, req.user);
     }
 
     @Patch(':id/finalizar')
-    finalizar(@Param('id') id: string, @Body() dto: FinalizarSeguimientoDto) {
-        return this.seguimientosService.finalizar(id, dto);
+    @UseGuards(JwtAuthGuard)
+    finalizar(@Param('id') id: string, @Body() dto: FinalizarSeguimientoDto, @Req() req: any) {
+        return this.seguimientosService.finalizar(id, dto, req.user);
     }
 
     @Delete(':id')

@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateSeguimientoDto } from './dto/create-seguimiento.dto';
 import { UpdateSeguimientoDto } from './dto/update-seguimiento.dto';
 import { FinalizarSeguimientoDto } from './dto/finalizar-seguimiento.dto';
+import { JwtPayload } from 'src/auth/types/jwt-payload/jwt-payload';
 
 @Injectable()
 export class SeguimientosService {
@@ -157,7 +158,7 @@ export class SeguimientosService {
         });
     }
 
-    async create(dto: CreateSeguimientoDto) {
+    async create(dto: CreateSeguimientoDto, user: JwtPayload) {
         const numeroVisita = dto.numeroVisita.trim();
 
         const exists = await this.findByNumeroVisita(numeroVisita);
@@ -206,6 +207,8 @@ export class SeguimientosService {
                 updatedAt: this.nowIso(),
                 deletedAt: null,
                 deletedReason: null,
+                createdById: user.sub,
+                updatedById: user.sub,
             },
             include: {
                 client: true,
@@ -298,7 +301,7 @@ export class SeguimientosService {
         return item;
     }
 
-    async update(id: string, dto: UpdateSeguimientoDto) {
+    async update(id: string, dto: UpdateSeguimientoDto, user: JwtPayload) {
         const current = await this.findOne(id);
 
         if (dto.numeroVisita && dto.numeroVisita.trim() !== current.numeroVisita) {
@@ -380,6 +383,7 @@ export class SeguimientosService {
                     ? { observacionesTecnicas: dto.observacionesTecnicas?.trim() || null }
                     : {}),
                 updatedAt: this.nowIso(),
+                updatedById: user.sub,
             },
             include: {
                 client: true,
@@ -416,7 +420,7 @@ export class SeguimientosService {
         return updated;
     }
 
-    async finalizar(id: string, dto: FinalizarSeguimientoDto) {
+    async finalizar(id: string, dto: FinalizarSeguimientoDto, user: JwtPayload) {
         const current = await this.findOne(id);
 
         if (!current.colaboradorId) {
@@ -445,6 +449,7 @@ export class SeguimientosService {
                 observacionesCliente: dto.observacionesCliente?.trim() || null,
                 observacionesTecnicas: dto.observacionesTecnicas?.trim() || null,
                 updatedAt: this.nowIso(),
+                updatedById: user.sub,
             },
             include: {
                 client: true,
