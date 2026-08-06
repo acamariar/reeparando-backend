@@ -1,15 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthService } from '../auth/auth.service';
 
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator/roles.decorator';
 @ApiTags('usuarios')
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly service: UsuariosService) { }
+  constructor(private readonly service: UsuariosService,
+    private readonly authService: AuthService,
+  ) { }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(1)
   findAll(
     @Query('usuario') usuario?: string,
   ) {
@@ -17,6 +26,8 @@ export class UsuariosController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(1)
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
@@ -27,6 +38,8 @@ export class UsuariosController {
   }
 
   @Post('login')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(1)
   login(
     @Body('usuario') usuario: string,
     @Body('clave') clave: string,
@@ -35,11 +48,15 @@ export class UsuariosController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(1)
   update(@Param('id') id: string, @Body() dto: UpdateUsuarioDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(1)
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

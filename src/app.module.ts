@@ -16,6 +16,7 @@ import { ReportesModule } from './reportes/reportes.module';
 import { ComprasEmpresaModule } from './compras-empresa/compras-empresa.module';
 import { SeguimientosModule } from './seguimientos/seguimientos.module';
 import { SeguimientoComisionModule } from './seguimiento-comision/seguimiento-comision.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // <- carga .env y lo expone en process.env
@@ -33,6 +34,7 @@ import { SeguimientoComisionModule } from './seguimiento-comision/seguimiento-co
     ComprasEmpresaModule,
     SeguimientosModule,
     SeguimientoComisionModule,
+    AuthModule,
   ],
   providers: [AppService],
 })
