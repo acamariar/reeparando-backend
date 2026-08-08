@@ -306,6 +306,7 @@ model Seguimiento {
   zona              String?
   fechaSolicitud    String
   fechaVisita       String?
+  horaVisita        String?
 
   servicioRequerido String
   tipoServicio      String?

@@ -192,6 +192,7 @@ export class SeguimientosService {
                 zona: dto.zona?.trim() || null,
                 fechaSolicitud: dto.fechaSolicitud,
                 fechaVisita: dto.fechaVisita ?? null,
+                horaVisita: dto.horaVisita ?? null,
                 servicioRequerido: dto.servicioRequerido.trim(),
                 tipoServicio: dto.tipoServicio?.trim() || null,
                 origenCliente: dto.origenCliente,

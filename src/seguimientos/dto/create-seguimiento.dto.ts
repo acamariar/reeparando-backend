@@ -45,6 +45,12 @@ export class CreateSeguimientoDto {
     @IsString()
     fechaVisita?: string;
 
+
+    @ApiPropertyOptional({ description: 'hh:mm', example: '14:30' })
+    @IsOptional()
+    @IsString()
+    horaVisita?: string;
+
     @ApiPropertyOptional({ example: 'colaborador_id' })
     @IsOptional()
     @IsMongoId()
